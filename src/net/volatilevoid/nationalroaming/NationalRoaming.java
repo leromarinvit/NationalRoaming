@@ -2,23 +2,28 @@ package net.volatilevoid.nationalroaming;
 
 import static de.robv.android.xposed.XposedHelpers.*;
 import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.IXposedHookZygoteInit;
+import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XposedBridge;
+import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 
 import java.lang.reflect.*;
 import android.telephony.ServiceState;
 
-public class NationalRoaming implements IXposedHookZygoteInit {
+public class NationalRoaming implements IXposedHookLoadPackage {
 
     private static final String TAG = "National Roaming: ";
 
     @Override
-    public void initZygote(StartupParam startupParam) throws Throwable {
+    public void handleLoadPackage(LoadPackageParam lpparam) throws Throwable {
+        
+        if (!lpparam.packageName.equals("com.android.providers.telephony"))
+            return;
+        
         final Method getprop = findMethodExact("android.os.SystemProperties", null, "get", String.class, String.class);
 
         findAndHookMethod(
                 "com.android.internal.telephony.gsm.GsmServiceStateTracker",
-                null,
+                lpparam.classLoader,
                 "pollStateDone",
                 new XC_MethodHook() {
 
