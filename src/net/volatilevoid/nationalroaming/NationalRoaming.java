@@ -8,6 +8,7 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 
 import java.lang.reflect.*;
 import android.telephony.ServiceState;
+import android.os.Build;
 
 public class NationalRoaming implements IXposedHookLoadPackage {
 
@@ -31,7 +32,10 @@ public class NationalRoaming implements IXposedHookLoadPackage {
                     protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                         ServiceState newSS;
                         try {
-                            newSS = (ServiceState)getObjectField(param.thisObject, "newSS");
+                            if (Build.VERSION.SDK_INT >= 18) // Android 4.3+
+                                newSS = (ServiceState)getObjectField(param.thisObject, "mNewSS");
+                            else
+                                newSS = (ServiceState)getObjectField(param.thisObject, "newSS");
                         } catch (NoSuchFieldError e) {
                             XposedBridge.log(TAG + "newSS not found");
                             return;
